@@ -1,0 +1,34 @@
+<div id="main-container">
+            <div id="main">
+                <h1>
+                   Shoot - question
+                </h1>
+                <div id="login-form">
+                    <form action="/question/" method="post" id="question_form">
+                        <fieldset>
+                            <label for="question_title">Title</label>
+                            <input autocapitalize="off" autocorrect="off" class="text-input" id="question_title" name="question_title" tabindex="1" type="text" value="">
+                        </fieldset>
+ 
+                        <fieldset>
+                          <label for="question_desc">Description</label>
+			  <input autocapitalize="off" autocorrect="off" class="text-input" id="question_desc" name="question_desc" tabindex="1" type="text" value="">
+                          
+                        </fieldset>
+ 
+                        <fieldset>
+                          <label for="question_ttl">TTL</label>
+			  <input autocapitalize="off" autocorrect="off" class="text-input" id="question_ttl_mins" name="question_ttl_mins" tabindex="1" type="text" value="">
+                          
+                        </fieldset>
+                        <fieldset>
+                            <span class="errormessage">{{errormessage}}</span>
+                        </fieldset>
+ 
+                        <div id="form_btn">
+                            <input id="signin-btn" class="btn btn-blue" type="submit" value="Question Now" tabindex="3">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>

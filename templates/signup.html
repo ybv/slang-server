@@ -1,0 +1,25 @@
+<div id="main-container">
+            <div id="main">
+                <h1>
+                    Shoot - sign up
+                </h1>
+                <div id="login-form">
+                    <form action="/auth/signup/" method="post" id="login_form">
+                        <fieldset>
+                            <label for="email">Email Address</label>
+                            <input autocapitalize="off" autocorrect="off" class="text-input" id="email" name="email" tabindex="1" type="text" value="">
+                            <label for="email">Full Name</label>
+                            <input autocapitalize="off" autocorrect="off" class="text-input" id="name" name="name" tabindex="1" type="text" value="">
+                        </fieldset>
+                         {% if check_msg %}
+                        <fieldset>
+                            <span class="errormessage">{{check_msg}}</span>
+                        </fieldset>
+                         {% end %}
+                        <div id="form_btn">
+                            <input id="signin-btn" class="btn btn-blue" type="submit" value="Sign up" tabindex="3">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
