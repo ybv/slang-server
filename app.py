@@ -44,7 +44,7 @@ class NewQuestionHandler(BaseHandler):
             self.write_response(200,'application/json',tornado.escape.json_encode(ret))
         else:
             self.render("compose.html",errormessage=err)
-            
+
     def write_response(self,status,ctype,resp):
         self.set_status(status)
         self.set_header("Content-Type",ctype)
@@ -62,7 +62,7 @@ class NewQuestionHandler(BaseHandler):
         else:
             question_id = yield self.db.questions.insert({'question_title':question_title,'question_desc':question_desc,'deleteIn':question_expires_in})
         self.redirect("/question/?id=" + str(question_id))
-    
+
 
 class MainHandler(BaseHandler):
     @tornado.web.authenticated
@@ -76,7 +76,7 @@ class AuthLoginHandler(BaseHandler):
     def get(self):
         errormessage = self.get_argument("error","")
         self.render("login.html", errormessage = errormessage)
-        
+
     @gen.coroutine
     def check_permission(self, password, email):
         #en_password = bcrypt.encrypt(password)
@@ -86,7 +86,7 @@ class AuthLoginHandler(BaseHandler):
         except Exception as e:
             print "exception",e
             raise gen.Return(False)
-        else: 
+        else:
             if user_existing and len(user_existing)>0  and md5_crypt.verify(password, user_existing['password']):
                 raise gen.Return(True)
             else:
@@ -121,7 +121,7 @@ class AuthLogoutHandler(BaseHandler):
 
 class AuthSignupHandler(BaseHandler):
     @tornado.gen.coroutine
-    def get(self): 
+    def get(self):
         check_mail_msg = self.get_argument("msg",None)
         self.render("signup.html", check_msg = check_mail_msg)
 
@@ -152,8 +152,8 @@ class AuthSignupHandler(BaseHandler):
               "to": to_field,
               "subject": "Hello Vaibhav Krishna",
               "text": "Congratulations Vaibhav Krishna, you just sent an email with Mailgun!  You are truly awesome!  You can see a record of this email in your logs: https://mailgun.com/cp/log .  You can send up to 300 emails/day "+ activation_link +" from this sandbox server.  Next, you should add your own domain so you can send 10,000 emails/month for free."})
-    
-    
+
+
     @gen.coroutine
     def post(self):
         email = self.get_argument("email", "")
@@ -193,7 +193,7 @@ class AuthVerifyHandler(BaseHandler):
         else:
             error_msg = u"?error=" + tornado.escape.url_escape("Login incorrect")
             self.redirect(u"/auth/login/" + error_msg)
-        
+
     @tornado.gen.coroutine
     def check_user(self,act_code):
         try:
@@ -230,6 +230,41 @@ class AuthVerifyHandler(BaseHandler):
             self.redirect(u"/auth/signup/" + error_msg)
 
 
+class upVoteHandler(BaseHandler):
+    @tornado.web.authenticated
+    @tornado.gen.coroutine
+    def post(self):
+        question_id = self.get_argument("q_id", None)
+        upvote_count = self.get_argument("upvotes",1)
+        if question_id:
+            self.db.questions.update({'_id':ObjectId(question_id)},{'$incr':{'upvotes':int(upvote_count)}})
+            ret = {"status":"ok"}
+            self.write_response(200,'application/json',tornado.escape.json_encode(ret))
+        else:
+            ret = {"status":"err"}
+            write_response(500,'application/json',ornado.escape.json_encode(ret))
+
+        email = tornado.escape.xhtml_escape(self.current_user)
+        self.render("index.html", email = email)
+
+    def write_response(self,status,ctype,resp):
+        self.set_status(status)
+        self.set_header("Content-Type",ctype)
+        self.write(resp)
+
+    @tornado.web.authenticated
+    @tornado.gen.coroutine
+    def get(self):
+        question_id = self.get_argument("q_id", None)
+        if question_id:
+            document = yield self.db.questions.find_one({'_id':ObjectId(question_id)},{'upvotes': True })
+            ret = {"status":"ok","upvotes":document}
+            self.write_response(200,'application/json',tornado.escape.json_encode(ret))
+        else:
+            ret = {"status":"err"}
+            write_response(500,'application/json',ornado.escape.json_encode(ret))
+
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -238,7 +273,8 @@ class Application(tornado.web.Application):
             (r"/auth/logout/", AuthLogoutHandler),
             (r"/auth/signup/", AuthSignupHandler),
             (r"/auth/verify/", AuthVerifyHandler),
-            (r"/question/", NewQuestionHandler)
+            (r"/question/", NewQuestionHandler),
+            (r"/upvote/", NewQuestionHandler)
         ]
         settings = {
             "template_path":Settings.TEMPLATE_PATH,
