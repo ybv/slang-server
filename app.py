@@ -264,6 +264,18 @@ class upVoteHandler(BaseHandler):
             ret = {"status":"err"}
             write_response(500,'application/json',ornado.escape.json_encode(ret))
 
+class QuestionListHandler(BaseHandler):
+    @tornado.web.authenticated
+    @tornado.gen.coroutine
+    def get(self):
+        question_id = self.get_argument("q_id", None)
+        if question_id:
+            document = yield self.db.questions.find_one({'_id':ObjectId(question_id)},{'upvotes': True })
+            ret = {"status":"ok","upvotes":document}
+            self.write_response(200,'application/json',tornado.escape.json_encode(ret))
+        else:
+            ret = {"status":"err"}
+            write_response(500,'application/json',ornado.escape.json_encode(ret))
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -274,7 +286,8 @@ class Application(tornado.web.Application):
             (r"/auth/signup/", AuthSignupHandler),
             (r"/auth/verify/", AuthVerifyHandler),
             (r"/question/", NewQuestionHandler),
-            (r"/upvote/", NewQuestionHandler)
+            (r"/upvote/", NewQuestionHandler),
+            (r"/questions/", NewQuestionHandler)
         ]
         settings = {
             "template_path":Settings.TEMPLATE_PATH,
