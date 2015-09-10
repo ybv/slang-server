@@ -20,7 +20,7 @@ def get_config(provider, section, key):
 def _get_ac(provider):
   try:
     ac_url = get_config(provider, 'access_token', 'url')
-    pay_load = dict(Config.items('access_token_payload')) 
+    pay_load = dict(Config.items('access_token_payload'))
     req_headers = dict(Config.items('access_token_headers'))
     print "pay_load,", pay_load
     print "req_headers,", req_headers
@@ -30,7 +30,7 @@ def _get_ac(provider):
     return act
   except Exception as e:
     print "exception", e
-    
+
 def get_access_token(provider):
   ac = _get_ac(provider)
   return ac
@@ -59,13 +59,13 @@ def _trans_req(provider, text, to_lang, ac_token):
   print req_url
   tr_resp = session.get(req_url, headers=tr_header)
   return tr_resp
-    
+
 def translate(text,lang):
   prov = random.choice(PROVIDERS)
   ac = get_access_token(prov)
   tr_resp = _trans_req(prov, text, lang, ac)
-  print tr_resp.text
+  return tr_resp.text
 
 if __name__ == '__main__':
   translate("hello world")
-    
+

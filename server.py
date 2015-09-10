@@ -1,7 +1,7 @@
 import json
 import os
 
-import concurrent.futures 
+import concurrent.futures
 import tornado.ioloop
 import tornado.web
 from tornado import gen
@@ -13,7 +13,7 @@ thread_pool = concurrent.futures.ThreadPoolExecutor(4)
 
 def load_langs(filen):
   lang_data = {}
-  with open(filen) as data_file:    
+  with open(filen) as data_file:
     lang_data = json.load(data_file)
   return lang_data
 
@@ -29,7 +29,8 @@ class TransHandler(tornado.web.RequestHandler):
   def get(self):
     link = self.get_argument('link') if 'link' in self.request.arguments else None
     to_lang = self.get_argument('to_lang') if 'to_lang' in self.request.arguments else None
-    ret = yield thread_pool.submit(translation_helper.translate, link, to_lang)
+    clean_text = yield thread_pool.submit(newspaper_helper.extract_text_from_link, link)
+    ret = yield thread_pool.submit(translation_helper.translate, clean_text, to_lang)
     self.write(ret)
 
 class LangListHandler(tornado.web.RequestHandler):
