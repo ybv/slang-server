@@ -15,6 +15,7 @@ def load_langs(filen):
   lang_data = {}
   with open(filen) as data_file:
     lang_data = json.load(data_file)
+  lang_data = {v: k for k, v in lang_data.items()}
   return lang_data
 
 class ClearHandler(tornado.web.RequestHandler):
