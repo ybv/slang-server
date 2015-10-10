@@ -14,7 +14,7 @@ AC_REFRESH_COUNT = 10
 # ac_map = {}
 
 def get_config(provider, section, key):
-  Config.read("{p}.ini".format(p=provider))
+  Config.read("config/{p}.ini".format(p=provider))
   return Config.get(section, key)
 
 def _get_ac(provider):
