@@ -1,9 +1,0 @@
-
-
-def save(bucket, content):
-    
-
-
-if __name__ == '__main__':
-    save('slang-data-store', ')
-    get('slang-data-store')
