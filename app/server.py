@@ -17,7 +17,7 @@ thread_pool = concurrent.futures.ThreadPoolExecutor(4)
 @gen.coroutine
 def run_command(command):
   process = Subprocess([command], stdout=PIPE, stderr=PIPE, shell=True)
-  yield process.wait_for_exit() 
+  yield process.wait_for_exit()
   out, err = process.stdout.read(), process.stderr.read()
   print "output", out
   print "err", err
@@ -40,13 +40,24 @@ class ClearHandler(tornado.web.RequestHandler):
 class TransHandler(tornado.web.RequestHandler):
   @tornado.gen.coroutine
   def get(self):
+    resp = {}
     link = self.get_argument('link') if 'link' in self.request.arguments else None
     to_lang = self.get_argument('to_lang') if 'to_lang' in self.request.arguments else None
-    clean_text = yield thread_pool.submit(newspaper_helper.extract_text_from_link, link)
+    clean_title, clean_text = yield thread_pool.submit(newspaper_helper.extract_text_from_link, link)
+    if clean_title:
+      trans_title = yield thread_pool.submit(translation_helper.translate, clean_title, to_lang)
+      resp['title'] = clean_title
     trans_text = yield thread_pool.submit(translation_helper.translate, clean_text, to_lang)
-    command = "echo \"{trans}\" | gsutil -h \"Content-Type:text/html; charset=utf-8\" cp - gs://slang-data-store/{link}:{lang}.html".format(trans=trans_text.encode('utf8'), link=link, lang=to_lang.encode('utf8'))
-    print command
-    run_command(command)
+    if trans_text:
+      resp['text'] = trans_text
+    try:
+      gs_string = "gs://slang-data-store/{link}:{lang}.html".format(trans=trans_text.encode('utf8').replace("/",'='), link=link.rep, lang=to_lang.encode('utf8'))
+      command = "echo \"{trans}\" | gsutil -h \"Content-Type:text/html; charset=utf-8\" cp - {g}".format(g=gs_string)
+      run_command(command)
+      resp['sharable_link'] = gs_string
+    except:
+      print "exception when saving via gsutil"
+      pass
     self.write(trans_text)
 
 class LangListHandler(tornado.web.RequestHandler):
