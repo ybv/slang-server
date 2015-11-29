@@ -39,7 +39,7 @@ class ClearHandler(tornado.web.RequestHandler):
 
 class TransHandler(tornado.web.RequestHandler):
  
- @tornado.gen.coroutine
+  @tornado.gen.coroutine
   def get(self):
     resp = {}
     link = self.get_argument('link') if 'link' in self.request.arguments else None
