@@ -82,7 +82,7 @@ def make_app(lang_data):
   return app
 
 if __name__=="__main__":
-  lang_data = load_langs('langs.json')
+  lang_data = load_langs('../langs.json')
   app = make_app(lang_data)
   app.listen(int(os.environ.get("PORT", 80)))
   tornado.ioloop.IOLoop.current().start()
