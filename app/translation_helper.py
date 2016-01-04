@@ -58,6 +58,8 @@ def get_split_texts(text, cap):
     return texts
 
 def _trans_req(provider, text, to_lang, ac_token):
+  if not text or text == '':
+    return None
   tr_url = get_config(provider, 'service', 'translate_url')
   tr_payload = {'to': to_lang, 'text': text }
   auth_header = get_config(provider, 'service_headers', 'Authorization')
@@ -77,6 +79,11 @@ def translate(text, lang):
 
   for text in get_split_texts(text, 1000):
     tr_resp = _trans_req(prov, text, lang, ac)
+
+    if not tr_resp:
+      translated_text = _trans_req(prov, 'Could not translate; please try again', lang, ac)
+      break
+
     tr_resp = tr_resp.text.replace('<string xmlns="http://schemas.microsoft.com/2003/10/Serialization/">',"")
     tr_resp = tr_resp.replace("</string>","")
     translated_text += tr_resp
