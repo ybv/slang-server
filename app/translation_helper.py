@@ -14,7 +14,7 @@ AC_REFRESH_COUNT = 10
 # ac_map = {}
 
 def get_config(provider, section, key):
-  Config.read("/etc/{p}.ini".format(p=provider))
+  Config.read("config/{p}.ini".format(p=provider))
   return Config.get(section, key)
 
 def _get_ac(provider):
@@ -54,7 +54,7 @@ def get_split_texts(text, cap):
     return [text]
   else:
     cursor = 0
-    texts = [text[i:i+n] for i in range(0, len(text), n)]
+    texts = [text[i:i+cap] for i in range(0, len(text), cap)]
     return texts
 
 def _trans_req(provider, text, to_lang, ac_token):
@@ -71,14 +71,14 @@ def _trans_req(provider, text, to_lang, ac_token):
   tr_resp = session.get(req_url, headers=tr_header)
   return tr_resp
 
-def translate(text,lang):
+def translate(text, lang):
   prov = random.choice(PROVIDERS)
   ac = get_access_token(prov)
   translated_text = ''
 
   for text in get_split_texts(text, 1000):
     tr_resp = _trans_req(prov, text, lang, ac)
-    tr_resp = tr_resp.text.replace('<string xmlns="http://schemas.microsoft.com/2')
+    tr_resp = tr_resp.text.replace('<string xmlns="http://schemas.microsoft.com/2003/10/Serialization/">',"")
     tr_resp = tr_resp.replace("</string>","")
     translated_text += tr_resp
 

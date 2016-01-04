@@ -6,22 +6,26 @@ import tornado.ioloop
 import tornado.web
 
 from tornado import gen
+from gcloud import storage
 from tornado.process import Subprocess
 from subprocess import PIPE
+import hashlib
 
 import newspaper_helper
 import translation_helper
 
 thread_pool = concurrent.futures.ThreadPoolExecutor(4)
+client = storage.Client('slang-instance')
+bucket = client.get_bucket('slang-data')
 
 @gen.coroutine
-def run_command(command):
-  process = Subprocess([command], stdout=PIPE, stderr=PIPE, shell=True)
-  yield process.wait_for_exit()
-  out, err = process.stdout.read(), process.stderr.read()
-  print "output", out
-  print "err", err
-
+def save_article(link, lang, content):
+  hashed = hashlib.sha1(b'{0}:{1}.html'.format(link, lang))
+  hex_dig = hashed.hexdigest()
+  blob = bucket.blob(hex_dig)
+  print content
+  blob.upload_from_string(content, content_type='text/html;charset=utf-8')
+  return blob.public_url
 
 def load_langs(filen):
   lang_data = {}
@@ -38,34 +42,30 @@ class ClearHandler(tornado.web.RequestHandler):
     self.write(ret)
 
 class TransHandler(tornado.web.RequestHandler):
- 
+
   @tornado.gen.coroutine
   def get(self):
     resp = {}
     link = self.get_argument('link') if 'link' in self.request.arguments else None
     to_lang = self.get_argument('to_lang') if 'to_lang' in self.request.arguments else None
-   
+
     clean_title, clean_text = yield thread_pool.submit(newspaper_helper.extract_text_from_link, link)
-    
+
     if clean_title:
       trans_title = yield thread_pool.submit(translation_helper.translate, clean_title, to_lang)
-      resp['title'] = clean_title
-    
+      resp['title'] = trans_title
+
     trans_text = yield thread_pool.submit(translation_helper.translate, clean_text, to_lang)
-    
+
     if trans_text:
       resp['text'] = trans_text
-    
+
     try:
-      gs_string = "gs://slang-data-store/{link}:{lang}.html".format(trans=trans_text.encode('utf8').replace("/",'='), link=link.rep, lang=to_lang.encode('utf8'))
-      command = "echo \"{trans}\" | gsutil -h \"Content-Type:text/html; charset=utf-8\" cp - {g}".format(g=gs_string)
-      run_command(command)
-      resp['sharable_link'] = gs_string
-      
+      resp['sharable_link'] = yield save_article(link, to_lang, trans_text)
     except Exception as e:
       print "exception when saving via gsutil", e
 
-    self.write(trans_text)
+    self.write(json.dumps(resp, ensure_ascii=False))
 
 class LangListHandler(tornado.web.RequestHandler):
   @tornado.gen.coroutine
