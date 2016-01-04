@@ -63,11 +63,10 @@ def _trans_req(provider, text, to_lang, ac_token):
   auth_header = get_config(provider, 'service_headers', 'Authorization')
   auth_header = auth_header.format(ac=ac_token)
   tr_header = {'Authorization' : auth_header}
-  print tr_header
   for k,v in tr_payload.iteritems():
    tr_payload[k] = unicode(v).encode('utf-8')
   req_url = tr_url + '?' + urllib.urlencode(tr_payload)
-  print req_url
+  print "req ms", req_url
   tr_resp = session.get(req_url, headers=tr_header)
   return tr_resp
 
