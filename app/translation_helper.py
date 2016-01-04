@@ -55,7 +55,7 @@ def get_split_texts(text, cap):
   else:
     cursor = 0
     leng = len(text) if len(text) < 3000 else 3000
-    texts = [text[i:i+cap] for i in range(0, len(text), cap)]
+    texts = [text[i:i+cap] for i in range(0, leng, cap)]
     return texts
 
 def _trans_req(provider, text, to_lang, ac_token):
