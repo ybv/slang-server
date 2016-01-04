@@ -54,6 +54,7 @@ def get_split_texts(text, cap):
     return [text]
   else:
     cursor = 0
+    leng = len(text) if len(text) < 3000 else 3000
     texts = [text[i:i+cap] for i in range(0, len(text), cap)]
     return texts
 
