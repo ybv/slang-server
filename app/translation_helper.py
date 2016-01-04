@@ -83,6 +83,7 @@ def translate(text, lang):
     if not tr_resp:
       tr_resp = _trans_req(prov, 'Could not translate; please try again', lang, ac)
       tr_resp = tr_resp.text.replace('<string xmlns="http://schemas.microsoft.com/2003/10/Serialization/">',"")
+      tr_resp = tr_resp.replace("</string>","")
       translated_text = tr_resp
       break
 
